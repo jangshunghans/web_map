@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>지도 시각화 - 좌표 데이터</title>
+
+  <!-- ── Leaflet CSS (지도 스타일) ── -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <!-- ── 커스텀 스타일 ── -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════
+       헤더 영역
+  ════════════════════════════════════════ -->
+  <header>
+    <h1>📍 지도 좌표 시각화</h1>
+    <p class="subtitle">flat.xlsx / check_all.xlsx 데이터를 지도 위에 표시합니다</p>
+  </header>
+
+  <!-- ════════════════════════════════════════
+       컨트롤 패널: 파일 업로드 & 범례
+  ════════════════════════════════════════ -->
+  <div id="control-panel">
+
+    <!-- ── flat 파일 업로드 섹션 ── -->
+    <div class="upload-section">
+      <h3>
+        <span class="legend-dot" style="background:#e74c3c;"></span>
+        flat 파일 (X / Y 좌표)
+      </h3>
+      <label class="upload-btn" for="flatFile">
+        📂 파일 선택 (.xlsx / .csv)
+      </label>
+      <input
+        type="file"
+        id="flatFile"
+        accept=".xlsx,.csv,.txt"
+        style="display:none;"
+      />
+      <span id="flatFileName" class="file-name">선택된 파일 없음</span>
+      <div id="flatStatus" class="status-msg"></div>
+    </div>
+
+    <!-- ── check_all 파일 업로드 섹션 ── -->
+    <div class="upload-section">
+      <h3>
+        <span class="legend-dot" style="background:#2980b9;"></span>
+        check_all 파일 (위도 / 경도)
+      </h3>
+      <label class="upload-btn" for="checkFile">
+        📂 파일 선택 (.xlsx)
+      </label>
+      <input
+        type="file"
+        id="checkFile"
+        accept=".xlsx"
+        style="display:none;"
+      />
+      <span id="checkFileName" class="file-name">선택된 파일 없음</span>
+      <div id="checkStatus" class="status-msg"></div>
+    </div>
+
+    <!-- ── 마커 통계 표시 ── -->
+    <div id="stats">
+      <span id="flatCount"  class="stat-item">flat: 0개</span>
+      <span id="checkCount" class="stat-item">check_all: 0개</span>
+    </div>
+
+    <!-- ── 마커 제어 버튼 ── -->
+    <div id="btn-group">
+      <button id="btnClearAll">🗑 전체 삭제</button>
+      <button id="btnFitBounds">🔍 전체 보기</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       지도 컨테이너
+  ════════════════════════════════════════ -->
+  <div id="map"></div>
+
+  <!-- ════════════════════════════════════════
+       범례 (지도 위 오른쪽 하단)
+  ════════════════════════════════════════ -->
+  <div id="legend">
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#e74c3c;"></span>
+      flat (X/Y 좌표)
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#2980b9;"></span>
+      check_all (위도/경도)
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       외부 라이브러리 로드
+       (CDN 방식 → GitHub Pages에서도 동작)
+  ════════════════════════════════════════ -->
+
+  <!-- Leaflet JS (지도 엔진) -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+  ></script>
+
+  <!-- SheetJS (xlsx 파일 파싱) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Papa Parse (CSV 파일 파싱) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- 메인 스크립트 -->
+  <script src="js/script.js"></script>
+
+</body>
+</html>

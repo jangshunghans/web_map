@@ -1,0 +1,10 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp
+
+# Node (혹시 나중에 사용할 경우 대비)
+node_modules/

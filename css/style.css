@@ -1,0 +1,271 @@
+/* ══════════════════════════════════════════════
+   기본 리셋 & 레이아웃
+══════════════════════════════════════════════ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Noto Sans KR', Arial, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════
+   헤더
+══════════════════════════════════════════════ */
+header {
+  background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+  padding: 12px 20px;
+  border-bottom: 2px solid #e74c3c;
+  flex-shrink: 0;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+header .subtitle {
+  font-size: 0.78rem;
+  color: #a0aec0;
+  margin-top: 2px;
+}
+
+/* ══════════════════════════════════════════════
+   컨트롤 패널
+══════════════════════════════════════════════ */
+#control-panel {
+  background: #16213e;
+  padding: 10px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+
+/* 업로드 섹션 카드 */
+.upload-section {
+  background: #0f3460;
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 220px;
+}
+
+.upload-section h3 {
+  font-size: 0.82rem;
+  color: #a0aec0;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 파일 선택 버튼 (label 스타일) */
+.upload-btn {
+  display: inline-block;
+  background: #e74c3c;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.upload-btn:hover {
+  background: #c0392b;
+}
+
+/* check_all 업로드 버튼은 파란색으로 구분 */
+#checkFile + .file-name {
+  /* 인접하지 않아서 JS로 처리 */
+}
+
+.upload-section:nth-child(2) .upload-btn {
+  background: #2980b9;
+}
+
+.upload-section:nth-child(2) .upload-btn:hover {
+  background: #1a6a9a;
+}
+
+/* 선택된 파일명 */
+.file-name {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.72rem;
+  color: #718096;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* 상태 메시지 */
+.status-msg {
+  font-size: 0.72rem;
+  margin-top: 4px;
+  min-height: 14px;
+  color: #68d391;
+}
+
+.status-msg.error {
+  color: #fc8181;
+}
+
+/* ── 통계 표시 ── */
+#stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-item {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #e2e8f0;
+  background: #0f3460;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* ── 버튼 그룹 ── */
+#btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#btn-group button {
+  background: #2d3748;
+  color: #e2e8f0;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+#btn-group button:hover {
+  background: #4a5568;
+}
+
+/* ══════════════════════════════════════════════
+   지도 영역 (나머지 높이 전부 차지)
+══════════════════════════════════════════════ */
+#map {
+  flex: 1;
+  width: 100%;
+  min-height: 0; /* flex 환경에서 높이 수축 방지 */
+}
+
+/* ══════════════════════════════════════════════
+   범례 (지도 위에 절대 위치)
+══════════════════════════════════════════════ */
+#legend {
+  position: fixed;
+  bottom: 30px;
+  right: 10px;
+  background: rgba(22, 33, 62, 0.92);
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 8px 12px;
+  z-index: 1000;
+  font-size: 0.78rem;
+  color: #e0e0e0;
+  backdrop-filter: blur(4px);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 컬러 도트 (범례 & 섹션 헤더 공통) */
+.legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   Leaflet 팝업 커스텀
+══════════════════════════════════════════════ */
+.leaflet-popup-content-wrapper {
+  background: #16213e;
+  color: #e0e0e0;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.leaflet-popup-tip {
+  background: #16213e;
+}
+
+.popup-title {
+  font-weight: bold;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+  color: #68d391;
+  border-bottom: 1px solid #0f3460;
+  padding-bottom: 4px;
+}
+
+.popup-row {
+  margin: 3px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.popup-label {
+  color: #a0aec0;
+  font-size: 0.76rem;
+}
+
+.popup-value {
+  color: #e2e8f0;
+  font-size: 0.76rem;
+  font-family: monospace;
+}
+
+/* ══════════════════════════════════════════════
+   반응형 — 소형 화면 조정
+══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  #control-panel {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .upload-section {
+    min-width: 160px;
+  }
+
+  header h1 {
+    font-size: 1.1rem;
+  }
+}
