@@ -277,6 +277,26 @@ header .subtitle {
 }
 
 /* ══════════════════════════════════════════════
+   버전 배지 (화면 우하단 고정)
+══════════════════════════════════════════════ */
+#version-badge {
+  position: fixed;
+  bottom: 8px;
+  right: 10px;
+  background: rgba(15, 52, 96, 0.75);
+  color: #4a90d9;
+  font-size: 0.68rem;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid rgba(41, 128, 185, 0.35);
+  z-index: 1100;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════
    반응형 — 소형 화면 조정
 ══════════════════════════════════════════════ */
 @media (max-width: 600px) {
