@@ -276,6 +276,25 @@ header .subtitle {
   font-family: monospace;
 }
 
+/* CSV 내보내기 버튼 */
+.export-btn {
+  display: inline-block;
+  margin-top: 5px;
+  background: transparent;
+  color: #68d391;
+  border: 1px solid #2d6a4f;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.export-btn:hover {
+  background: #2d6a4f;
+  color: #fff;
+}
+
 /* ══════════════════════════════════════════════
    버전 배지 (화면 우하단 고정)
 ══════════════════════════════════════════════ */

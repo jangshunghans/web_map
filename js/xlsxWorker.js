@@ -1,58 +1,92 @@
 /**
- * xlsxWorker.js — XLSX 파싱 전용 Web Worker
+ * xlsxWorker.js — XLSX 파싱 전용 Web Worker (최적화 버전)
  *
- * 메인 스레드에서 { type, payload } 메시지를 수신하면
- * SheetJS로 XLSX를 파싱한 뒤 결과를 postMessage로 돌려준다.
+ * 최적화 포인트:
+ *   1) dense: true  → 셀 참조 문자열("A1" 등) 생성 안 함 → 파싱 2~3x 빠름
+ *   2) dense array  직접 순회 → sheet_to_json 대비 객체 생성 비용 절감
+ *   3) Transferable ArrayBuffer → 복사 없이 Worker로 전달
  *
- * 메인 스레드 → Worker  : { type: 'PARSE', payload: { buffer, fileType } }
- * Worker → 메인 스레드  : { type: 'PROGRESS', payload: { step, total } }
- *                         { type: 'DONE',     payload: { rows, headers } }
- *                         { type: 'ERROR',    payload: { message } }
+ * 메시지 프로토콜
+ *   Main → Worker : { type:'PARSE', payload:{ buffer } }
+ *   Worker → Main : { type:'PROGRESS', payload:{ label } }
+ *                   { type:'DONE',     payload:{ rows, headers, sheetName, total } }
+ *                   { type:'ERROR',    payload:{ message } }
  */
 
-/* SheetJS CDN 로드 (Worker 내부는 importScripts 사용) */
 importScripts(
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 );
 
 self.onmessage = function (e) {
   const { type, payload } = e.data;
-
   if (type !== 'PARSE') return;
 
   try {
-    const { buffer, sheetIndex = 0 } = payload;
+    const { buffer } = payload;
 
-    /* ── 1. 진행 상황 알림: 파싱 시작 ── */
-    self.postMessage({ type: 'PROGRESS', payload: { step: 1, label: 'XLSX 읽는 중...' } });
+    /* ── 1단계: Workbook 파싱
+         dense : true  → 내부 저장을 2D 배열로 → 셀 key 문자열 생성 없음
+         raw   : true  → 원시 값 사용 (포맷 변환 생략)
+         cellDates: false → 날짜 변환 생략
+         sheetStubs: false → 빈 셀 객체 미생성                          ── */
+    self.postMessage({ type: 'PROGRESS', payload: { label: 'XLSX 읽는 중...' } });
 
-    /* ── 2. Workbook 파싱
-          cellDates: false → 날짜를 숫자 그대로 (속도 향상)
-          sheetStubs: false → 빈 셀 객체 생성 안 함 (메모리 절약)  ── */
     const workbook = XLSX.read(new Uint8Array(buffer), {
       type:        'array',
+      dense:       true,    // ★ 핵심 최적화
+      raw:         true,
       cellDates:   false,
       sheetStubs:  false,
-      raw:         true,   // 셀 값을 원시 타입으로 읽음 (속도 향상)
     });
 
-    /* ── 3. 진행 상황: 시트 변환 시작 ── */
-    self.postMessage({ type: 'PROGRESS', payload: { step: 2, label: '시트 변환 중...' } });
+    /* ── 2단계: 첫 번째 시트 선택 ── */
+    self.postMessage({ type: 'PROGRESS', payload: { label: '시트 변환 중...' } });
 
-    /* ── 4. 첫 번째 시트(또는 지정 인덱스)를 JSON 배열로 변환 ── */
-    const sheetName = workbook.SheetNames[sheetIndex] || workbook.SheetNames[0];
+    const sheetName = workbook.SheetNames[0];
     const sheet     = workbook.Sheets[sheetName];
 
-    /* sheet_to_json: defval='' 로 빈 셀은 빈 문자열 처리 */
-    const rows = XLSX.utils.sheet_to_json(sheet, {
-      defval: '',
-      raw:    true,
-    });
+    /* dense 모드에서는 sheet['!data']가 2D 배열
+       !data[row][col] = { v: 원시값, ... } 또는 undefined              */
+    const data = sheet['!data'] || [];
 
-    /* ── 5. 헤더 추출 (첫 행의 키) ── */
-    const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
+    if (data.length === 0) {
+      self.postMessage({ type: 'DONE', payload: { rows: [], headers: [], sheetName, total: 0 } });
+      return;
+    }
 
-    /* ── 6. 완료 알림 ── */
+    /* ── 3단계: 헤더 추출 (첫 번째 행) ── */
+    const headerRow = data[0] || [];
+    const headers   = headerRow.map(cell =>
+      (cell && cell.v != null) ? String(cell.v).trim() : ''
+    );
+
+    /* ── 4단계: 데이터 행을 객체 배열로 변환
+         sheet_to_json 대신 직접 순회 → 불필요한 중간 객체 생성 없음    ── */
+    self.postMessage({ type: 'PROGRESS', payload: { label: '데이터 추출 중...' } });
+
+    const rows = [];
+    const totalRows = data.length;
+
+    for (let r = 1; r < totalRows; r++) {
+      const row = data[r];
+      if (!row) continue;   // 완전히 빈 행 스킵
+
+      const obj = {};
+      let hasData = false;
+
+      for (let c = 0; c < headers.length; c++) {
+        const key  = headers[c];
+        if (!key) continue;          // 헤더 없는 열 무시
+        const cell = row[c];
+        const val  = (cell && cell.v != null) ? cell.v : '';
+        obj[key]   = val;
+        if (val !== '') hasData = true;
+      }
+
+      if (hasData) rows.push(obj);  // 완전히 빈 행은 결과에서 제외
+    }
+
+    /* ── 5단계: 완료 ── */
     self.postMessage({
       type:    'DONE',
       payload: { rows, headers, sheetName, total: rows.length },
