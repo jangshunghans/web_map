@@ -118,10 +118,34 @@ header .subtitle {
   margin-top: 4px;
   min-height: 14px;
   color: #68d391;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .status-msg.error {
   color: #fc8181;
+}
+
+/* 로딩 중 상태 */
+.status-msg.loading {
+  color: #f6c90e;
+}
+
+/* 스피너 애니메이션 */
+.loader-spinner {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 2px solid rgba(246, 201, 14, 0.3);
+  border-top-color: #f6c90e;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── 통계 표시 ── */
